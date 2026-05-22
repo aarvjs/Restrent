@@ -25,14 +25,14 @@ export const Navbar: React.FC = () => {
   // Monitor scroll height to swap between translucent glass and solid charcoal
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      const scrolled = window.scrollY > 20;
+      setIsScrolled((prev) => {
+        if (prev !== scrolled) return scrolled;
+        return prev;
+      });
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

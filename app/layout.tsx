@@ -7,6 +7,7 @@ import { Footer } from "../components/layout/Footer";
 import { Preloader } from "../components/common/Preloader";
 import { WhatsAppOrder } from "../components/common/WhatsAppOrder";
 import { FloatingButtons } from "../components/common/FloatingButtons";
+import { OrderNowButton } from "../components/common/OrderNowButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,9 +56,14 @@ export default function RootLayout({
 
           {/* Call & WhatsApp Quick Buttons */}
           <FloatingButtons />
+
+          {/* Mobile Scroll-Sensitive Order Now Pill */}
+          <OrderNowButton />
         </CartProvider>
       </body>
     </html>
   );
 }
+
+
 

@@ -61,15 +61,15 @@ export const Hero: React.FC = () => {
   return (
     <section className="relative flex min-h-screen w-full flex-col justify-center items-center overflow-hidden bg-charcoal pt-28 pb-16 font-sans">
       
-      {/* Background Ken Burns Slideshow */}
+      {/* Background Ken Burns Slideshow optimized to lightweight fade */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1.1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: 'easeOut' }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="absolute inset-0 h-full w-full"
           >
             <Image

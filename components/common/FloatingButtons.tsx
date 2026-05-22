@@ -3,8 +3,8 @@
 import React from 'react';
 import { Phone, MessageSquare } from 'lucide-react';
 
-const RESTAURANT_PHONE = "+919999999999";
-const RESTAURANT_WHATSAPP = "91XXXXXXXXXX";
+const RESTAURANT_PHONE = "9336519515";
+const RESTAURANT_WHATSAPP = "919336519515";
 
 export const FloatingButtons: React.FC = () => {
   return (
@@ -13,9 +13,9 @@ export const FloatingButtons: React.FC = () => {
       <a
         href={`tel:${RESTAURANT_PHONE}`}
         aria-label="Call The Sizzling Plate"
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-cream backdrop-blur-md border border-white/10 shadow-lg shadow-black/25 transition-all duration-300 hover:bg-tomato hover:text-white hover:scale-115 active:scale-95"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-tomato to-warm-orange text-white border border-tomato/20 shadow-lg shadow-tomato/30 transition-all duration-300 hover:scale-115 hover:shadow-xl hover:shadow-tomato/40 active:scale-95"
       >
-        <Phone className="h-5 w-5 fill-none" />
+        <Phone className="h-5 w-5 fill-white/20" />
       </a>
 
       {/* Quick WhatsApp Chat Button */}
@@ -26,8 +26,9 @@ export const FloatingButtons: React.FC = () => {
         aria-label="Chat on WhatsApp"
         className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-950/20 transition-all duration-300 hover:bg-emerald-500 hover:scale-115 active:scale-95"
       >
-        <MessageSquare className="h-5 w-5 fill-none" />
+        <MessageSquare className="h-5 w-5 fill-white/20" />
       </a>
     </div>
   );
 };
+

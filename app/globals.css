@@ -14,20 +14,27 @@
 
 html {
   scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-padding-top: 5rem;
 }
 
 body {
   background-color: #111827; /* Charcoal dark by default for a premium mood, but we use cream sections */
   color: #FFF7ED; /* Cream text */
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-overflow-scrolling: touch; /* Kinetic scrolling for iOS */
+  overscroll-behavior-y: none; /* Avoid rubberband scrolling jank */
 }
 
-/* Glassmorphism helpers */
+/* Glassmorphism helpers with rendering hints */
 .glassmorphism {
   background: rgba(17, 24, 39, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  will-change: backdrop-filter;
 }
 
 .glassmorphism-light {
@@ -35,6 +42,7 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(17, 24, 39, 0.05);
+  will-change: backdrop-filter;
 }
 
 /* Custom premium scrollbar */
@@ -56,11 +64,18 @@ body {
   background: #F97316;
 }
 
-/* Floating animation keys */
+/* Floating animation keys with GPU acceleration */
 @keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(2deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
+  0% { transform: translate3d(0, 0px, 0) rotate(0deg); }
+  50% { transform: translate3d(0, -10px, 0) rotate(2deg); }
+  100% { transform: translate3d(0, 0px, 0) rotate(0deg); }
+}
+
+.animate-float, .animate-float-delayed, .animate-float-fast {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .animate-float {
@@ -75,4 +90,40 @@ body {
 .animate-float-fast {
   animation: float 4s ease-in-out infinite;
 }
+
+/* Hardware accelerate active floating panels globally */
+.fixed, .absolute {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Mobile Scroll Smoothness Optimization (Very Important) */
+@media (max-width: 767px) {
+  /* Disable heavy backdrop-filters on mobile viewports for 60fps smooth scrolling */
+  .backdrop-blur-2xl, .backdrop-blur-xl, .backdrop-blur-lg, .backdrop-blur-md, .backdrop-blur-sm, .backdrop-blur-xs, .glassmorphism, .glassmorphism-light {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* Solid opacity fallback for glassy backgrounds on mobile to maintain contrast */
+  .glassmorphism {
+    background: rgba(17, 24, 39, 0.95) !important;
+  }
+  .glassmorphism-light {
+    background: rgba(255, 247, 237, 0.98) !important;
+  }
+  
+  /* Re-adjust navbar scroll overlay background opacity on mobile */
+  header.bg-charcoal\/90 {
+    background-color: rgba(17, 24, 39, 0.98) !important;
+  }
+
+  /* Disable heavy floating floating keyframe animations on mobile screens to save GPU cycles */
+  .animate-float, .animate-float-delayed, .animate-float-fast {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+}
+
 
