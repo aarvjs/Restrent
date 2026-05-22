@@ -1007,12 +1007,12 @@ Thank you!
                       
                       <div className="flex justify-between text-[11px]">
                         <span>Dine Date:</span>
-                        <span className="font-bold text-charcoal">{tableForm.date || 'SELECT DATE'}</span>
+                        <span className="font-bold text-charcoal">{selectedDate ? selectedDate.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }) : 'SELECT DATE'}</span>
                       </div>
                       
                       <div className="flex justify-between text-[11px]">
                         <span>Time Slot:</span>
-                        <span className="font-bold text-charcoal">{tableForm.time || 'SELECT TIME'}</span>
+                        <span className="font-bold text-charcoal">{selectedTime ? `${selectedTime} (${mealType})` : 'SELECT TIME'}</span>
                       </div>
                       
                       <div className="flex justify-between text-[11px]">
