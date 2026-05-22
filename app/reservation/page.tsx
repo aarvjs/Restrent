@@ -22,7 +22,11 @@ import {
   Check, 
   X, 
   HelpCircle,
-  Sparkles
+  Sparkles,
+  Sun,
+  Moon,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import Image from 'next/image';
 import { PageHero } from '../../components/common/PageHero';
@@ -40,11 +44,17 @@ export default function ReservationPage() {
   const [tableForm, setTableForm] = useState({
     name: '',
     phone: '',
-    date: '',
-    time: '',
-    guests: '2',
+    guests: 2,
     specialRequest: '',
   });
+
+  // Date and Time selection state
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [mealType, setMealType] = useState<'Lunch' | 'Dinner'>('Dinner');
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  
+  // Ref for date scrolling
+  const dateScrollRef = useRef<HTMLDivElement>(null);
 
   // Food form state
   const [foodForm, setFoodForm] = useState({
@@ -96,6 +106,30 @@ export default function ReservationPage() {
     }
   }, [toastMessage]);
 
+  // Helpers
+  const generateNextDays = (numDays: number) => {
+    const days = [];
+    for (let i = 0; i < numDays; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  };
+  const availableDates = generateNextDays(14); // 2 weeks
+
+  const timeSlots = {
+    Lunch: ['12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM'],
+    Dinner: ['6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM']
+  };
+
+  const scrollDates = (dir: 'left' | 'right') => {
+    if (dateScrollRef.current) {
+      const scrollAmount = 200;
+      dateScrollRef.current.scrollBy({ left: dir === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   // Redirection handler on success submit
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -112,8 +146,8 @@ Booking ID: ${orderId}
 
 Name: ${tableForm.name}
 Phone: ${tableForm.phone}
-Date: ${tableForm.date}
-Time: ${tableForm.time}
+Date: ${selectedDate.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+Time: ${selectedTime} (${mealType})
 Number of Guests: ${tableForm.guests}
 Special Request: ${tableForm.specialRequest.trim() || 'None'}
 
@@ -157,11 +191,12 @@ Thank you!
       setTableForm({
         name: '',
         phone: '',
-        date: '',
-        time: '',
-        guests: '2',
+        guests: 2,
         specialRequest: '',
       });
+      setSelectedDate(new Date());
+      setMealType('Dinner');
+      setSelectedTime('');
       setFoodForm({
         name: '',
         phone: '',
@@ -215,7 +250,10 @@ Thank you!
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (activeTab === 'table') {
-      if (!tableForm.name || !tableForm.phone || !tableForm.date || !tableForm.time) return;
+      if (!tableForm.name || !tableForm.phone || !selectedTime) {
+        setToastMessage('Please fill all required fields and select a time slot!');
+        return;
+      }
     } else {
       if (!foodForm.name || !foodForm.phone) return;
       if (selectedItems.length === 0) {
@@ -457,63 +495,138 @@ Thank you!
                     </div>
                   </div>
 
-                  {/* Date */}
-                  <div className="flex flex-col">
-                    <label className="text-xs font-mono font-bold tracking-wider text-charcoal/70 uppercase mb-2">
-                      Preferred Date
-                    </label>
-                    <div className="relative">
-                      <Calendar className="absolute top-3.5 left-4 h-4.5 w-4.5 text-charcoal/40" />
-                      <input
-                        type="date"
-                        name="date"
-                        required
-                        min={new Date().toISOString().split('T')[0]}
-                        value={tableForm.date}
-                        onChange={handleTableChange}
-                        className="w-full rounded-xl border border-charcoal/10 bg-cream/20 py-3.5 pl-11 pr-4 text-sm text-charcoal placeholder-charcoal/40 focus:border-tomato/50 focus:bg-white focus:outline-none transition-all"
-                      />
+                  {/* Select Date & Time (New UI) */}
+                  <div className="flex flex-col sm:col-span-2 mt-4 space-y-6">
+                    <div>
+                      <h4 className="text-sm font-bold text-charcoal mb-3">Select Date & Time</h4>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => scrollDates('left')} className="flex-shrink-0 z-10 p-2 bg-white shadow-md rounded-full text-charcoal hover:text-tomato border border-charcoal/5 cursor-pointer">
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <div ref={dateScrollRef} className="flex gap-4 overflow-x-auto scroll-smooth w-full py-4 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                          {availableDates.map((date, idx) => {
+                            const isSelected = selectedDate.toDateString() === date.toDateString();
+                            return (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => { setSelectedDate(date); setSelectedTime(''); }}
+                                className={`flex-shrink-0 flex flex-col items-center justify-center w-20 h-24 rounded-2xl border transition-all cursor-pointer ${
+                                  isSelected 
+                                    ? 'bg-tomato border-tomato text-white shadow-md scale-105' 
+                                    : 'bg-white border-charcoal/10 text-charcoal hover:border-tomato/50'
+                                }`}
+                              >
+                                <span className={`text-[10px] font-bold uppercase ${isSelected ? 'text-white/90' : 'text-charcoal/50'}`}>
+                                  {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                                </span>
+                                <span className="text-2xl font-extrabold mt-1">
+                                  {date.getDate()}
+                                </span>
+                                <span className={`text-[10px] font-bold uppercase mt-0.5 ${isSelected ? 'text-white/90' : 'text-charcoal/50'}`}>
+                                  {date.toLocaleDateString('en-US', { month: 'short' })}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <button type="button" onClick={() => scrollDates('right')} className="flex-shrink-0 z-10 p-2 bg-white shadow-md rounded-full text-charcoal hover:text-tomato border border-charcoal/5 cursor-pointer">
+                          <ChevronRight className="h-5 w-5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Time */}
-                  <div className="flex flex-col">
-                    <label className="text-xs font-mono font-bold tracking-wider text-charcoal/70 uppercase mb-2">
-                      Preferred Time Slot
-                    </label>
-                    <div className="relative">
-                      <Clock className="absolute top-3.5 left-4 h-4.5 w-4.5 text-charcoal/40" />
-                      <input
-                        type="time"
-                        name="time"
-                        required
-                        value={tableForm.time}
-                        onChange={handleTableChange}
-                        className="w-full rounded-xl border border-charcoal/10 bg-cream/20 py-3.5 pl-11 pr-4 text-sm text-charcoal placeholder-charcoal/40 focus:border-tomato/50 focus:bg-white focus:outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Guests */}
-                  <div className="flex flex-col sm:col-span-2">
-                    <label className="text-xs font-mono font-bold tracking-wider text-charcoal/70 uppercase mb-2">
-                      Number of Guests
-                    </label>
-                    <div className="relative">
-                      <Users className="absolute top-3.5 left-4 h-4.5 w-4.5 text-charcoal/40" />
-                      <select
-                        name="guests"
-                        value={tableForm.guests}
-                        onChange={handleTableChange}
-                        className="w-full rounded-xl border border-charcoal/10 bg-cream/20 py-3.5 pl-11 pr-4 text-sm text-charcoal focus:border-tomato/50 focus:bg-white focus:outline-none appearance-none cursor-pointer"
+                    {/* Meal Type Toggle */}
+                    <div className="relative flex items-center bg-cream/50 p-1.5 rounded-full border border-charcoal/15 w-fit shadow-inner">
+                      <button
+                        type="button"
+                        onClick={() => { setMealType('Lunch'); setSelectedTime(''); }}
+                        className={`relative z-10 flex items-center gap-2 px-8 py-2.5 rounded-full text-sm font-bold uppercase transition-colors cursor-pointer ${
+                          mealType === 'Lunch' ? 'text-charcoal' : 'text-charcoal/40 hover:text-charcoal/80'
+                        }`}
                       >
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                          <option key={num} value={num}>
-                            {num} {num === 1 ? 'Guest' : 'Guests'}
-                          </option>
-                        ))}
-                        <option value="10+">10+ Guests (Banquet Request)</option>
-                      </select>
+                        {mealType === 'Lunch' && (
+                          <motion.div
+                            layoutId="mealTypePill"
+                            className="absolute inset-0 bg-white rounded-full shadow-md border border-charcoal/10 -z-10"
+                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                          />
+                        )}
+                        <Sun className={`h-4.5 w-4.5 transition-colors ${mealType === 'Lunch' ? 'text-warm-orange' : ''}`} />
+                        Lunch
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setMealType('Dinner'); setSelectedTime(''); }}
+                        className={`relative z-10 flex items-center gap-2 px-8 py-2.5 rounded-full text-sm font-bold uppercase transition-colors cursor-pointer ${
+                          mealType === 'Dinner' ? 'text-charcoal' : 'text-charcoal/40 hover:text-charcoal/80'
+                        }`}
+                      >
+                        {mealType === 'Dinner' && (
+                          <motion.div
+                            layoutId="mealTypePill"
+                            className="absolute inset-0 bg-white rounded-full shadow-md border border-charcoal/10 -z-10"
+                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                          />
+                        )}
+                        <Moon className={`h-4.5 w-4.5 transition-colors ${mealType === 'Dinner' ? 'text-tomato' : ''}`} />
+                        Dinner
+                      </button>
+                    </div>
+
+                    {/* Time Slots */}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {timeSlots[mealType].map((time) => {
+                        const isSelected = selectedTime === time;
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            onClick={() => setSelectedTime(time)}
+                            className={`py-4 rounded-xl border text-sm font-bold transition-all flex items-center justify-center cursor-pointer ${
+                              isSelected
+                                ? 'border-tomato text-tomato shadow-sm'
+                                : 'border-charcoal/10 text-charcoal/70 bg-white hover:border-tomato/50 hover:text-tomato'
+                            }`}
+                          >
+                            <span>{time}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Guests & Food Preference (Guests Selection) */}
+                  <div className="flex flex-col sm:col-span-2 mt-4 pt-6 border-t border-charcoal/5">
+                    <h4 className="text-sm font-bold text-charcoal mb-4">Guests</h4>
+                    <div className="flex items-center justify-between p-4 rounded-2xl border border-charcoal/10 bg-white">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-charcoal/5 flex items-center justify-center text-charcoal">
+                          <Users className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-charcoal">Number of Guests</p>
+                          <p className="text-[10px] text-charcoal/50 uppercase font-mono mt-0.5">For parties larger than 10, add to special request.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center rounded-xl border border-charcoal/10 bg-cream/30 p-1">
+                        <button
+                          type="button"
+                          onClick={() => setTableForm(prev => ({ ...prev, guests: Math.max(1, prev.guests as number - 1) }))}
+                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white transition-colors text-charcoal shadow-sm cursor-pointer"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="w-10 text-center font-bold font-mono text-sm">{tableForm.guests}</span>
+                        <button
+                          type="button"
+                          onClick={() => setTableForm(prev => ({ ...prev, guests: Math.min(10, prev.guests as number + 1) }))}
+                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white transition-colors text-charcoal shadow-sm cursor-pointer"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
